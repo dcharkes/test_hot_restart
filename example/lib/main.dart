@@ -1,3 +1,5 @@
+import 'dart:isolate';
+
 import 'package:flutter/material.dart';
 
 import 'package:test_hot_restart/test_hot_restart.dart' as test_hot_restart;
@@ -14,13 +16,14 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  late test_hot_restart.MyResource resource;
-  late int allocatedCounter;
   @override
   void initState() {
     super.initState();
-    resource = test_hot_restart.MyResource.allocate();
-    allocatedCounter = test_hot_restart.MyResource.allocatedCounter(); 
+    Isolate.run(() {
+      // Note: doesn't keep the isolate alive yet.
+      print("In newly spawned isolate");
+      test_hot_restart.MyResource.allocate();
+    });
   }
 
   @override
@@ -35,7 +38,7 @@ class _MyAppState extends State<MyApp> {
         body: SingleChildScrollView(
           child: Container(
             padding: const EdgeInsets.all(10),
-            child:  Column(
+            child: Column(
               children: [
                 const Text(
                   'This calls a native function through FFI that is shipped as source in the package. '
@@ -45,7 +48,8 @@ class _MyAppState extends State<MyApp> {
                 ),
                 spacerSmall,
                 Text(
-                  'allocated counter = $allocatedCounter',
+                  // Run check every frame to see updates from async.
+                  'allocated counter = ${test_hot_restart.MyResource.allocatedCounter()}',
                   style: textStyle,
                   textAlign: TextAlign.center,
                 ),
