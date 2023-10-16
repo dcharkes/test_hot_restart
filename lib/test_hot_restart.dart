@@ -1,4 +1,5 @@
 import 'dart:ffi';
+import 'dart:io';
 
 import 'test_hot_restart_bindings_generated.dart' as bindings;
 
@@ -25,8 +26,11 @@ class MyResource implements Finalizable {
     bindings.ReleaseResource(_pointer);
   }
 
-  // static final _dylib = DynamicLibrary.open('libtest_hot_restart.so'); // Android
-  static final _dylib = DynamicLibrary.process(); // MacOS
+  // TODO(dacoharkes): Support `addressOf` for `@Native`s.
+  // https://github.com/dart-lang/sdk/issues/50552
+  static final _dylib = (Platform.isMacOS || Platform.isIOS)
+      ? DynamicLibrary.process()
+      : DynamicLibrary.open('libtest_hot_restart.so'); // Android & Linux
 
   static final _finalizer = NativeFinalizer(
       _dylib.lookup<NativeFinalizerFunction>('ReleaseResource'));
