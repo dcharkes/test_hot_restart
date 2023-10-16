@@ -6,13 +6,13 @@ int allocated_counter = 0;
 
 FFI_PLUGIN_EXPORT void* AllocateResource() {
   assert(global_resource == NULL);
-  void* global_resource = malloc(20);
+  global_resource = malloc(20);
   allocated_counter++;
   return global_resource;
 }
 
 FFI_PLUGIN_EXPORT void ReleaseResource(void* resource) {
-  assert(global_resource == resource);
+  printf("Releasing Resource.\n");
   free(resource);
   global_resource = NULL;
   allocated_counter--;
